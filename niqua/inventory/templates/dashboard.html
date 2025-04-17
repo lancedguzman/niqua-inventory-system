@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block body_content %}
+<h1>Hello, User!</h1>
+<h2>Welcome Back!</h2>
+
+<a href="{% url 'dashboard' %}">Dashboard</a>
+<a href="{% url 'product-list' %}">Products</a>
+<a href="{% url 'order-list' %}">Job Orders</a>
+<a href="{% url 'material-list' %}">Materials</a>
+<a href="{% url 'stock-list' %}">Stock-In</a>
+<a href="{% url 'report' %}">Reports</a>
+
+{% endblock %}
