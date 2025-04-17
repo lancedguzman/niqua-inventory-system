@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.db
+
+# Django
+*.sqlite3
+*.env
+.env
+.env.*
+
+# VSCode / IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Virtualenv
+venv/
+env/
+ENV/
+.venv/
+.Python
+
+# Migrations
+*/migrations/__pycache__/
+*/migrations/*.py[cod]
