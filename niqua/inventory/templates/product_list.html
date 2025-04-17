@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block body_content %}
+    <h1>Product List:</h1>
+    <ul>
+        {% for product in products %}
+        <p>ID:</p>
+        <p>Name: {{ product.name }}</p>
+        <p>Quantity: {{ product.quantity }}</p>
+        <p>Price: {{ product.retail_price }}</p>
+        {% endfor %}
+    </ul>
+
+{% endblock %}
