@@ -24,12 +24,8 @@
                         <td>{{ product.name }}</td>
                         <td>{{ product.stock }}</td>
                         <td>₱ {{ product.retail_price }}</td>
-                        <td>
-                            <a href="{% url 'product-edit' product.id %}" class="btn btn-sm btn-dark">Edit</a>
-                        </td>
-                        <td>
-                            <a href="{% url 'product-delete' product.id %}" class="btn btn-dark">Delete</a>
-                        </td>
+                        <td><a href="{% url 'product-edit' product.id %}" class="btn btn-sm btn-dark">Edit</a></td>
+                        <td><a href="{% url 'product-delete' product.id %}" class="btn btn-sm btn-dark">Delete</a></td>
                     </tr>
                     {% empty %}
                     <tr>
@@ -38,11 +34,8 @@
                     {% endfor %}
                 </tbody>
             </table>
-
             <div class="d-flex justify-content-end mt-3">
-                <a href="{% url 'product-form' %}" class="btn btn-dark">
-                   Add Product
-                </a>
+                <a href="{% url 'product-form' %}" class="btn btn-dark">Add Product</a>
             </div>
         </div>
     </div>
