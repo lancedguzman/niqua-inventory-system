@@ -1,0 +1,23 @@
+{% block body_content %}
+<div class="container">
+    <h1 class="mb-4">Edit Product</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Product Information</h5>
+            </div>
+            <div class="card-body">
+                {{ edit_form.as_p }}
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'product-list' %}" class="btn btn-secondary">Back to Products</a>
+            <button type="submit" class="btn btn-primary">Update Product</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

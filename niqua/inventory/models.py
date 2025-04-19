@@ -9,11 +9,6 @@ class Profile(models.Model):
     name = models.CharField(max_length=50, null=False)
 
 
-class MaterialKey(models.Model):
-    """Creates the Material Key."""
-    material_key = models.AutoField(primary_key=True)
-
-
 class Textile(models.Model):
     """Creates the Textile Model."""
     UNIT_CHOICES = [
@@ -26,7 +21,9 @@ class Textile(models.Model):
     unit = models.CharField(max_length=4, choices=UNIT_CHOICES,
                             default="FT")
     stock = models.IntegerField(validators=[MinValueValidator(0)])
-    material_key = models.OneToOneField(MaterialKey, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
 
 
 class Accessory(models.Model):
@@ -41,22 +38,24 @@ class Accessory(models.Model):
     unit = models.CharField(max_length=4, choices=UNIT_CHOICES,
                             default="PC")
     stock = models.IntegerField(validators=[MinValueValidator(0)])
-    material_key = models.OneToOneField(MaterialKey, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
 
 
 class Product(models.Model):
     """Creates the Product Model."""
     name = models.CharField(max_length=50)
-    quantity = models.IntegerField()
+    stock = models.IntegerField()
+    retail_price = models.DecimalField(max_digits=6, decimal_places=2)
+    calculated_price = models.DecimalField(max_digits=6, decimal_places=2)
     product_margin = models.DecimalField(max_digits=6, decimal_places=2)
     labor_time = models.DecimalField(max_digits=6, decimal_places=2)
     miscellaneous_margin = models.DecimalField(max_digits=6, decimal_places=2)
-    retail_price = models.DecimalField(max_digits=6, decimal_places=2)
-    calculated_price = models.DecimalField(max_digits=6, decimal_places=2)
-    last_updated = models.DateField(auto_now_add=True)
+    last_updated = models.DateField(auto_now=True)
 
-    textiles = models.ManyToManyField(Textile, through="Product_Component")
-    accessories = models.ManyToManyField(Accessory, through="Product_Accessory")
+    # textiles = models.ManyToManyField(Textile, through="ProductTextile")
+    # accessories = models.ManyToManyField(Accessory, through="ProductAccessory")
     
     class Meta:
         ordering = ["name"]
@@ -65,21 +64,27 @@ class Product(models.Model):
         return self.name
     
 
-class Component(models.Model):
-    name = models.CharField(max_length=50)
+class ProductTextile(models.Model):
+    """Creates the Product Textile Model."""
+    textile = models.ForeignKey(Textile, on_delete=models.CASCADE,
+                                related_name="textile")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE,
+                                related_name="products")
+    name = models.CharField(max_length=255)
+    stock = models.IntegerField(validators=[MinValueValidator(0)])
+
+    def __str__(self):
+        return self.name
 
 
-class Product_Component(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    textile = models.ForeignKey(Textile, on_delete=models.CASCADE)
-    component = models.ForeignKey(Component, on_delete=models.CASCADE)
-    height = models.DecimalField(max_digits=6, decimal_places=2)
-    width = models.DecimalField(max_digits=6, decimal_places=2)
-    quantity = models.IntegerField(validators=[MinValueValidator(0)])
-    buffer = models.DecimalField(max_digits=6, decimal_places=2)
+class ProductAccessory(models.Model):
+    """Creates the Product Accessory Model."""
+    accessory = models.ForeignKey(Accessory, on_delete=models.CASCADE,
+                                  related_name="accessory")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE,
+                                related_name="product")
+    name = models.CharField(max_length=255)
+    stock = models.IntegerField(validators=[MinValueValidator(0)])
 
-
-class Product_Accessory(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    accessory = models.ForeignKey(Accessory, on_delete=models.CASCADE)
-    amount = models.IntegerField(validators=[MinValueValidator(0)])
+    def __str__(self):
+        return self.name

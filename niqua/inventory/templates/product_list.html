@@ -1,14 +1,50 @@
 {% extends 'base.html' %}
 
 {% block body_content %}
-    <h1>Product List:</h1>
-    <ul>
-        {% for product in products %}
-        <p>ID:</p>
-        <p>Name: {{ product.name }}</p>
-        <p>Quantity: {{ product.quantity }}</p>
-        <p>Price: {{ product.retail_price }}</p>
-        {% endfor %}
-    </ul>
+<div class="container mt-4">
+    <h1 class="mb-4">Product List</h1>
 
+    <div class="card shadow rounded">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Stock</th>
+                        <th>Retail Price</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <th>{{ forloop.counter }}</th>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.stock }}</td>
+                        <td>₱ {{ product.retail_price }}</td>
+                        <td>
+                            <a href="{% url 'product-edit' product.id %}" class="btn btn-sm btn-dark">Edit</a>
+                        </td>
+                        <td>
+                            <a href="{% url 'product-delete' product.id %}" class="btn btn-dark">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">No products found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-end mt-3">
+                <a href="{% url 'product-form' %}" class="btn btn-dark">
+                   Add Product
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
