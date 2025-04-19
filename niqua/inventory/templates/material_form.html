@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block body_content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Add {{ material_type|title }}</h1>
+
+    <div class="card shadow rounded">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ create_form.as_p }}
+                <button type="submit" class="btn btn-primary btn-dark">Add</button>
+                <a href="{% url 'material-list' %}" class="btn btn-secondary btn-dark">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

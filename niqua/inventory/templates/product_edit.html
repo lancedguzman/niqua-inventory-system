@@ -1,3 +1,5 @@
+{% extends 'base.html' %}
+
 {% block body_content %}
 <div class="container">
     <h1 class="mb-4">Edit Product</h1>
@@ -16,7 +18,7 @@
 
         <div class="d-flex justify-content-between">
             <a href="{% url 'product-list' %}" class="btn btn-secondary">Back to Products</a>
-            <button type="submit" class="btn btn-primary">Update Product</button>
+            <button type="submit" class="btn btn-primary btn-dark">Update Product</button>
         </div>
     </form>
 </div>
