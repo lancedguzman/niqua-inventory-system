@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Product
+from .forms import ProductForm, EditForm
 
 @login_required
 def dashboard(request):
@@ -13,6 +14,46 @@ def product_list(request):
     products = Product.objects.all()
     return render(request, "product_list.html",
                   {"products": products})
+
+
+def product_form(request):
+    """Handles product creation."""
+    if request.method == "POST":
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            product = form.save()
+            return redirect("product-list")
+    else:
+        form = ProductForm()
+
+    return render(request, "product_form.html",
+                  {"product_form": form})
+
+
+def product_edit(request, product_id):
+    """Displays page to edit products."""
+    product = Product.objects.get(id=product_id)
+
+    if (request.method == "POST"):
+        form = EditForm(request.POST, instance=product)
+
+        if form.is_valid():
+            form.save()
+            return redirect("product-list")
+    
+    else:
+        form = EditForm(instance=product)
+
+    return render(request, "product_edit.html",
+                  {"edit_form": form})
+
+
+def product_delete(request, product_id):
+    """Deletes a product from product list."""
+    product = Product.objects.get(id=product_id)
+    product.delete()
+    return redirect("product-list")
+
 
 def job_orders(request):
     """Displays the current job orders."""

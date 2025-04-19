@@ -1,0 +1,67 @@
+{% block body_content %}
+<div class="container">
+    <h1 class="mb-4">Add Product</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Product Information Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Product Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        {{ product_form.name.label_tag }}
+                        {{ product_form.name }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ product_form.stock.label_tag }}
+                        {{ product_form.stock }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ product_form.retail_price.label_tag }}
+                        {{ product_form.retail_price }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ product_form.calculated_price.label_tag }}
+                        {{ product_form.calculated_price }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Details Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Product Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        {{ product_form.product_margin.label_tag }}
+                        {{ product_form.product_margin }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ product_form.labor_time.label_tag }}
+                        {{ product_form.labor_time }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ product_form.miscellaneous_margin.label_tag }}
+                        {{ product_form.miscellaneous_margin }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'product-list' %}" class="btn btn-secondary">Back to Products</a>
+            <div>
+                <button type="submit" class="btn btn-primary">Add Product</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
