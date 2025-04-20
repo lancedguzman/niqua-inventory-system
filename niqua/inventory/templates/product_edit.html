@@ -16,10 +16,106 @@
             </div>
         </div>
 
+        <!-- Textile Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Textiles</h5>
+                <button type="button" class="btn btn-sm btn-outline-dark" id="add-textile">Add Textile</button>
+            </div>
+            <div class="card-body" id="textile-formset">
+                {{ textile_formset.management_form }}
+                {% for form in textile_formset %}
+                    <div class="form-inline mb-2 textile-form">
+                        {{ form.as_p }}
+                        {% if form.instance.pk %}
+                            {{ form.DELETE }} <label>Delete</label>
+                        {% endif %}
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-form">Remove</button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Accessory Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Accessories</h5>
+                <button type="button" class="btn btn-sm btn-outline-dark" id="add-accessory">Add Accessory</button>
+            </div>
+            <div class="card-body" id="accessory-formset">
+                {{ accessory_formset.management_form }}
+                {% for form in accessory_formset %}
+                    <div class="form-inline mb-2 accessory-form">
+                        {{ form.as_p }}
+                        {% if form.instance.pk %}
+                            {{ form.DELETE }} <label>Delete</label>
+                        {% endif %}
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-form">Remove</button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
         <div class="d-flex justify-content-between">
             <a href="{% url 'product-list' %}" class="btn btn-secondary">Back to Products</a>
             <button type="submit" class="btn btn-primary btn-dark">Update Product</button>
         </div>
     </form>
+
+    <!-- Hidden Empty Form Templates -->
+    <div id="empty-textile-form" style="display: none;">
+        <div class="form-inline mb-2 textile-form">
+            {{ textile_formset.empty_form.as_p|safe }}
+            <button type="button" class="btn btn-sm btn-outline-danger remove-form">Remove</button>
+        </div>
+    </div>
+
+    <div id="empty-accessory-form" style="display: none;">
+        <div class="form-inline mb-2 accessory-form">
+            {{ accessory_formset.empty_form.as_p|safe }}
+            <button type="button" class="btn btn-sm btn-outline-danger remove-form">Remove</button>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    function setupFormset(prefix) {
+        const formsetDiv = document.getElementById(`${prefix}-formset`);
+        const emptyFormHTML = document.getElementById(`empty-${prefix}-form`).innerHTML;
+        const addButton = document.getElementById(`add-${prefix}`);
+
+        addButton.addEventListener("click", function() {
+            const totalForms = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+            const formCount = parseInt(totalForms.value, 10);
+            const newForm = emptyFormHTML.replace(/__prefix__/g, formCount);
+            formsetDiv.insertAdjacentHTML("beforeend", newForm);
+            totalForms.value = formCount + 1;
+        });
+
+        formsetDiv.addEventListener("click", function(e) {
+            if (e.target.classList.contains("remove-form")) {
+                const formRow = e.target.closest(".form-inline");
+                const deleteCheckbox = formRow.querySelector('input[type="checkbox"][name$="-DELETE"]');
+
+                if (deleteCheckbox) {
+                    deleteCheckbox.checked = true;
+                    formRow.style.display = "none";
+                } else {
+                    formRow.remove();
+                    const totalForms = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+                    const currentCount = formsetDiv.querySelectorAll(`.${prefix}-form`).length;
+                    totalForms.value = currentCount;
+                }
+            }
+        });
+    }
+
+    setupFormset("textile");
+    setupFormset("accessory");
+});
+</script>
 {% endblock %}

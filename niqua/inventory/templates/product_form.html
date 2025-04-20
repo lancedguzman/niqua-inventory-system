@@ -3,10 +3,10 @@
 {% block body_content %}
 <div class="container">
     <h1 class="mb-4">Add Product</h1>
-    
+
     <form method="post">
         {% csrf_token %}
-        
+
         <!-- Product Information Section -->
         <div class="card mb-4">
             <div class="card-header bg-light">
@@ -61,6 +61,38 @@
             </div>
         </div>
 
+        <!-- Textile Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Textiles</h5>
+                <button type="button" class="btn btn-sm btn-outline-dark" id="add-textile">Add Textile</button>
+            </div>
+            <div class="card-body" id="textile-formset">
+                {{ textile_formset.management_form }}
+                {% for form in textile_formset %}
+                    <div class="form-inline mb-2 textile-form">
+                        {{ form.as_p }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Accessory Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Accessories</h5>
+                <button type="button" class="btn btn-sm btn-outline-dark" id="add-accessory">Add Accessory</button>
+            </div>
+            <div class="card-body" id="accessory-formset">
+                {{ accessory_formset.management_form }}
+                {% for form in accessory_formset %}
+                    <div class="form-inline mb-2 accessory-form">
+                        {{ form.as_p }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
         <!-- Form Actions -->
         <div class="d-flex justify-content-between">
             <a href="{% url 'product-list' %}" class="btn btn-secondary">Back to Products</a>
@@ -70,4 +102,34 @@
         </div>
     </form>
 </div>
+
+<!-- JavaScript for dynamic formset addition -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function cloneFormset(prefix, containerId, addButtonId) {
+            const addButton = document.getElementById(addButtonId);
+            const container = document.getElementById(containerId);
+            const totalForms = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+
+            addButton.addEventListener('click', function () {
+                const currentFormCount = parseInt(totalForms.value);
+                const formToClone = container.querySelector(`.${prefix}-form`);
+                const newForm = formToClone.cloneNode(true);
+
+                newForm.querySelectorAll('input, select, textarea, label').forEach((el) => {
+                    if (el.name) el.name = el.name.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
+                    if (el.id) el.id = el.id.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
+                    if (el.htmlFor) el.htmlFor = el.htmlFor.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
+                    if (el.tagName !== 'LABEL') el.value = ''; // Clear field values
+                });
+
+                container.appendChild(newForm);
+                totalForms.value = currentFormCount + 1;
+            });
+        }
+
+        cloneFormset('textile', 'textile-formset', 'add-textile');
+        cloneFormset('accessory', 'accessory-formset', 'add-accessory');
+    });
+</script>
 {% endblock %}

@@ -21,7 +21,8 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name','stock',
                     'retail_price', 'calculated_price',
                     'product_margin', 'labor_time',
-                    'miscellaneous_margin', 'last_updated')
+                    'miscellaneous_margin', 'last_updated',
+                    'buffer',)
 
 
 class TextileAdmin(admin.ModelAdmin):
@@ -41,13 +42,16 @@ class AccessoryAdmin(admin.ModelAdmin):
 class ProductTextileAdmin(admin.ModelAdmin):
     """Creates the ProductTextile Admin Panel."""
     model = ProductTextile
-    list_display = ('name', 'stock',)
+    list_display = ('textile', 'product',
+                    'height', 'width',
+                    'quantity',)
 
 
 class ProductAccessoryAdmin(admin.ModelAdmin):
     """Creates the ProductAccessory Admin Panel."""
     model = ProductAccessory
-    list_display = ('name', 'stock',)
+    list_display = ('accessory', 'product',
+                    'quantity',)
 
 
 class OrderAdmin(admin.ModelAdmin):
