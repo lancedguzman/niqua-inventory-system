@@ -1,5 +1,7 @@
 from django import forms
-from .models import Product, Textile, Accessory, Order
+from django.forms import inlineformset_factory
+from django.core.validators import MinValueValidator
+from .models import *
 
 
 class ProductForm(forms.ModelForm):
@@ -10,7 +12,6 @@ class ProductForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add Bootstrap classes to all fields
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
@@ -23,7 +24,6 @@ class EditProductForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add Bootstrap classes to all fields
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
@@ -32,56 +32,74 @@ class TextileForm(forms.ModelForm):
     """Form to create new Textile."""
     class Meta:
         model = Textile
-        fields = ["name", "cost",
-                  "unit", "stock",]
-        
+        fields = ["name", "cost", "unit", "stock"]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add Bootstrap classes to all fields
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
 
 class AccessoryForm(forms.ModelForm):
-    """Form to create new Textile."""
+    """Form to create new Accessory."""
     class Meta:
         model = Accessory
-        fields = ["name", "cost",
-                  "unit", "stock",]
+        fields = ["name", "cost", "unit", "stock"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add Bootstrap classes to all fields
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
 
-class EditTextileForm(forms.ModelForm):
-    """Creates form to edit Textile."""
+# -----------------------------
+# Inline Formsets with styling
+# -----------------------------
+
+class ProductTextileInlineForm(forms.ModelForm):
+    """Inline form for ProductTextile"""
     class Meta:
-        model = Textile
-        fields = ["name", "cost",
-                  "unit", "stock",]
+        model = ProductTextile
+        fields = ['textile', 'height',
+                  'width', 'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add Bootstrap classes to all fields
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
 
-class EditAccessoryForm(forms.ModelForm):
-    """Creates form to edit Textile."""
+class ProductAccessoryInlineForm(forms.ModelForm):
+    """Inline form for ProductAccessory"""
     class Meta:
-        model = Accessory
-        fields = ["name", "cost",
-                  "unit", "stock",]
+        model = ProductAccessory
+        fields = ['accessory', 'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add Bootstrap classes to all fields
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+
+# -----------------------------
+# Inline Formset Factories
+# -----------------------------
+
+
+ProductTextileFormSet = inlineformset_factory(
+    Product, ProductTextile,
+    form=ProductTextileInlineForm,
+    fields=['textile', 'height',
+            'width', 'quantity'],
+    extra=1, can_delete=True
+)
+
+ProductAccessoryFormSet = inlineformset_factory(
+    Product, ProductAccessory,
+    form=ProductAccessoryInlineForm,
+    fields=['accessory', 'quantity'],
+    extra=1, can_delete=True
+)
 
 
 class OrderForm(forms.ModelForm):

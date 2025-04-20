@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Product, Accessory, Textile, Order
+from .models import *
 from .forms import *
 
 @login_required
@@ -17,35 +17,66 @@ def product_list(request):
 
 
 def product_form(request):
-    """Displays page to create product."""
-    if request.method == "POST":
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            product = form.save()
-            return redirect("product-list")
-    else:
-        form = ProductForm()
+    """Displays page to create a product along with associated textiles and accessories."""
+    if (request.method == "POST"):
+        # Instantiate forms
+        product_form = ProductForm(request.POST)
+        textile_formset = ProductTextileFormSet(request.POST, prefix="textile")
+        accessory_formset = ProductAccessoryFormSet(request.POST, prefix="accessory")
 
-    return render(request, "product_form.html",
-                  {"product_form": form})
+        # Check if all forms are valid
+        if product_form.is_valid() and textile_formset.is_valid() and accessory_formset.is_valid():
+            # Save the Product
+            product = product_form.save()
+
+            # Associate the product with the formsets
+            textile_formset.instance = product
+            accessory_formset.instance = product
+
+            # Save the formsets (ProductTextiles and ProductAccessories)
+            textile_formset.save()
+            accessory_formset.save()
+
+            # Redirect to the product list page after successful creation
+            return redirect("product-list")
+
+    else:
+        # Instantiate empty forms
+        product_form = ProductForm()
+        textile_formset = ProductTextileFormSet(prefix="textile")
+        accessory_formset = ProductAccessoryFormSet(prefix="accessory")
+
+    return render(request, "product_form.html", {
+        "product_form": product_form,
+        "textile_formset": textile_formset,
+        "accessory_formset": accessory_formset,
+    })
 
 
 def product_edit(request, product_id):
-    """Displays page to edit products."""
+    """Displays page to edit products along with accessories and textiles."""
     product = Product.objects.get(id=product_id)
 
-    if (request.method == "POST"):
-        form = EditProductForm(request.POST, instance=product)
+    if request.method == "POST":
+        product_form = EditProductForm(request.POST, instance=product)
+        textile_formset = ProductTextileFormSet(request.POST, instance=product, prefix="textile")
+        accessory_formset = ProductAccessoryFormSet(request.POST, instance=product, prefix="accessory")
 
-        if form.is_valid():
-            form.save()
+        if product_form.is_valid() and textile_formset.is_valid() and accessory_formset.is_valid():
+            product_form.save()
+            textile_formset.save()
+            accessory_formset.save()
             return redirect("product-list")
-    
     else:
-        form = EditProductForm(instance=product)
+        product_form = EditProductForm(instance=product)
+        textile_formset = ProductTextileFormSet(instance=product, prefix="textile")
+        accessory_formset = ProductAccessoryFormSet(instance=product, prefix="accessory")
 
-    return render(request, "product_edit.html",
-                  {"edit_form": form})
+    return render(request, "product_edit.html", {
+        "edit_form": product_form,
+        "textile_formset": textile_formset,
+        "accessory_formset": accessory_formset,
+    })
 
 
 def product_delete(request, product_id):

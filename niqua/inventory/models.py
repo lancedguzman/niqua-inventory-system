@@ -54,9 +54,6 @@ class Product(models.Model):
     miscellaneous_margin = models.DecimalField(max_digits=6, decimal_places=2)
     buffer = models.DecimalField(max_digits=6, decimal_places=2)
     last_updated = models.DateField(auto_now=True)
-
-    # textiles = models.ManyToManyField(Textile, through="ProductTextile")
-    # accessories = models.ManyToManyField(Accessory, through="ProductAccessory")
     
     class Meta:
         ordering = ["name"]
@@ -71,14 +68,9 @@ class ProductTextile(models.Model):
                                 related_name="textile")
     product = models.ForeignKey(Product, on_delete=models.CASCADE,
                                 related_name="products")
-    name = models.CharField(max_length=255)
-    stock = models.IntegerField(validators=[MinValueValidator(0)])
     height = models.IntegerField(validators=[MinValueValidator(0)])
     width = models.IntegerField(validators=[MinValueValidator(0)])
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
-
-    def __str__(self):
-        return self.name
 
 
 class ProductAccessory(models.Model):
@@ -87,12 +79,7 @@ class ProductAccessory(models.Model):
                                   related_name="accessory")
     product = models.ForeignKey(Product, on_delete=models.CASCADE,
                                 related_name="product")
-    name = models.CharField(max_length=255)
-    stock = models.IntegerField(validators=[MinValueValidator(0)])
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
-
-    def __str__(self):
-        return self.name
 
 
 class Order(models.Model):
@@ -124,19 +111,29 @@ class Order(models.Model):
 
 
 def textile_compute(height, width,
-                    quantity, buffer):
+                    quantity):
     """Gets the total cost of textiles used."""
     material_price = (height
                     * width
-                    * quantity
-                    / (buffer/100 + 1))
+                    * quantity)
     return material_price
 
-def accesssory_compute(cost, quantity):
+
+def accessory_compute(cost, quantity):
     """Gets the total cost of accessories used."""
     accessory_price = cost * quantity
     return accessory_price
 
 
-def product_pricing():
+def product_pricing(product_margin, labor_time,
+                    miscellaneous_margin, buffer):
     """Gets the calculated price of the product."""
+    raw_material = textile_compute + accessory_compute
+    estimated_selling = ((raw_material
+               + labor_time
+               + product_margin
+               + miscellaneous_margin)
+               / (1 + buffer))
+    VAT = 700
+    srp = estimated_selling + VAT
+    return srp
