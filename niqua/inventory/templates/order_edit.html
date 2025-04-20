@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block body_content %}
+<div class="container">
+    <h1 class="mb-4">Edit Order</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Order Information</h5>
+            </div>
+            <div class="card-body">
+                {{ edit_form.as_p }}
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'order-list' %}" class="btn btn-secondary btn-dark">Back to Orders</a>
+            <button type="submit" class="btn btn-primary btn-dark">Update Order</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

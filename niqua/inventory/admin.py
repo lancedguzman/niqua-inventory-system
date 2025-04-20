@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
-from .models import Product, Profile, Textile, Accessory, ProductTextile, ProductAccessory
+from .models import *
 
 
 class ProfileInline(admin.StackedInline):
@@ -50,6 +50,14 @@ class ProductAccessoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'stock',)
 
 
+class OrderAdmin(admin.ModelAdmin):
+    """Creates the Order Admin Panel."""
+    model = Order
+    list_display = ('customer', 'product',
+                    'quantity', 'outlet',
+                    'status',)
+
+
 admin.site.register(Product, ProductAdmin)
 
 admin.site.register(Textile, TextileAdmin)
@@ -59,6 +67,8 @@ admin.site.register(Accessory, AccessoryAdmin)
 admin.site.register(ProductTextile, ProductTextileAdmin)
 
 admin.site.register(ProductAccessory, ProductAccessoryAdmin)
+
+admin.site.register(Order, OrderAdmin)
 
 admin.site.unregister(User)
 
