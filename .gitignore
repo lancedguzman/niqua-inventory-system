@@ -35,3 +35,11 @@ ENV/
 # Migrations
 */migrations/__pycache__/
 */migrations/*.py[cod]
+
+# Ignore all pycache folders and compiled Python files
+**/__pycache__/
+**/*.py[cod]
+
+# Ignore all migrations folders (including nested ones)
+**/migrations/
+**/migrations/*.py[cod]
