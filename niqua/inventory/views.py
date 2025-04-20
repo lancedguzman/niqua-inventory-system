@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Product, Accessory, Textile
+from .models import Product, Accessory, Textile, Order
 from .forms import *
 
 @login_required
@@ -57,7 +57,49 @@ def product_delete(request, product_id):
 
 def job_orders(request):
     """Displays the current job orders."""
-    return render(request, "job_orders.html")
+    orders = Order.objects.all()
+    return render(request, "job_orders.html",
+                  {"orders": orders})
+
+
+def order_form(request):
+    """Displays page to create job orders."""
+    if (request.method == "POST"):
+        form = OrderForm(request.POST)
+
+        if form.is_valid():
+            order = form.save()
+            return redirect("order-list")
+    else:
+        form = OrderForm()
+
+    return render(request, "order_form.html",
+                  {"create_form": form})
+
+
+def order_edit(request, pk):
+    """Displays page to edit orders."""
+    order = Order.objects.get(pk=pk)
+
+    if (request.method == "POST"):
+        form = EditOrderForm(request.POST, instance=order)
+
+        if form.is_valid():
+            form.save()
+            return redirect("order-list")
+    
+    else:
+        form = EditOrderForm(instance=order)
+
+    return render(request, "order_edit.html",
+                  {"edit_form": form})
+
+
+def order_delete(request, pk):
+    """Deletes a job order from the list."""
+    order = Order.objects.get(pk=pk)
+    order.delete()
+    return redirect("order-list")
 
 
 def material_list(request):

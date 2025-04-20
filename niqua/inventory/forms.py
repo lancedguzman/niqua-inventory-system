@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, Textile, Accessory
+from .models import Product, Textile, Accessory, Order
 
 
 class ProductForm(forms.ModelForm):
@@ -82,3 +82,29 @@ class EditAccessoryForm(forms.ModelForm):
         # Add Bootstrap classes to all fields
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+
+class OrderForm(forms.ModelForm):
+    """Form to create job orders."""
+    class Meta:
+        model = Order
+        fields = "__all__"
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add Bootstrap classes to all fields
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'}) 
+
+
+class EditOrderForm(forms.ModelForm):
+    """Creates form to edit order."""
+    class Meta:
+        model = Order
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add Bootstrap classes to all fields
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'}) 
