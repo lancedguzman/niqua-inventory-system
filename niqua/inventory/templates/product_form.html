@@ -23,12 +23,12 @@
                         {{ product_form.stock }}
                     </div>
                     <div class="col-md-3">
-                        {{ product_form.retail_price.label_tag }}
-                        {{ product_form.retail_price }}
+                        {{ product_form.calculated_price.label_tag }}
+                        <input type="text" class="form-control" value="{{ product_form.initial.calculated_price }}" disabled>
                     </div>
                     <div class="col-md-3">
-                        {{ product_form.calculated_price.label_tag }}
-                        {{ product_form.calculated_price }}
+                        {{ product_form.retail_price.label_tag }}
+                        <input type="text" class="form-control" value="{{ product_form.initial.retail_price }}" disabled>
                     </div>
                 </div>
             </div>
@@ -120,7 +120,7 @@
                     if (el.name) el.name = el.name.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
                     if (el.id) el.id = el.id.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
                     if (el.htmlFor) el.htmlFor = el.htmlFor.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
-                    if (el.tagName !== 'LABEL') el.value = ''; // Clear field values
+                    if (el.tagName !== 'LABEL') el.value = '';
                 });
 
                 container.appendChild(newForm);

@@ -24,6 +24,7 @@
             </div>
             <div class="card-body" id="textile-formset">
                 {{ textile_formset.management_form }}
+                <!-- TO-DO: FIX THIS -->
                 {% for form in textile_formset %}
                     <div class="form-inline mb-2 textile-form">
                         {{ form.as_p }}
@@ -44,6 +45,7 @@
             </div>
             <div class="card-body" id="accessory-formset">
                 {{ accessory_formset.management_form }}
+                <!-- TO-DO: FIX THIS -->
                 {% for form in accessory_formset %}
                     <div class="form-inline mb-2 accessory-form">
                         {{ form.as_p }}
