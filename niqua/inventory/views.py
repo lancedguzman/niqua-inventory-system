@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import *
+from .models import Product, Accessory, Textile, Order
 from .forms import *
 
 @login_required

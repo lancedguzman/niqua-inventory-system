@@ -18,8 +18,7 @@ class Textile(models.Model):
     ]
     name = models.CharField(max_length=50)
     cost = models.DecimalField(max_digits=6, decimal_places=3)
-    unit = models.CharField(max_length=4, choices=UNIT_CHOICES,
-                            default="FT")
+    unit = models.CharField(max_length=4, choices=UNIT_CHOICES, default="FT")
     stock = models.IntegerField(validators=[MinValueValidator(0)])
 
     def __str__(self):
@@ -35,8 +34,7 @@ class Accessory(models.Model):
 
     name = models.CharField(max_length=50)
     cost = models.DecimalField(max_digits=6, decimal_places=3)
-    unit = models.CharField(max_length=4, choices=UNIT_CHOICES,
-                            default="PC")
+    unit = models.CharField(max_length=4, choices=UNIT_CHOICES, default="PC")
     stock = models.IntegerField(validators=[MinValueValidator(0)])
 
     def __str__(self):
@@ -47,27 +45,57 @@ class Product(models.Model):
     """Creates the Product Model."""
     name = models.CharField(max_length=50)
     stock = models.IntegerField()
-    retail_price = models.DecimalField(max_digits=6, decimal_places=2)
-    calculated_price = models.DecimalField(max_digits=6, decimal_places=2)
+    retail_price = models.DecimalField(max_digits=6, decimal_places=2,
+                                       blank=True, null=True)
+    calculated_price = models.DecimalField(max_digits=6, decimal_places=2,
+                                           blank=True, null=True)
     product_margin = models.DecimalField(max_digits=6, decimal_places=2)
     labor_time = models.DecimalField(max_digits=6, decimal_places=2)
     miscellaneous_margin = models.DecimalField(max_digits=6, decimal_places=2)
     buffer = models.DecimalField(max_digits=6, decimal_places=2)
     last_updated = models.DateField(auto_now=True)
-    
+
     class Meta:
         ordering = ["name"]
 
     def __str__(self):
         return self.name
-    
+
+    def compute_textile_cost(self):
+        total = 0
+        for pt in self.products.all():  # related_name="products"
+            unit_cost = pt.textile.cost
+            area = textile_compute(pt.height, pt.width, pt.quantity)
+            total += unit_cost * area
+        return total
+
+    def compute_accessory_cost(self):
+        total = 0
+        for pa in self.product.all():  # related_name="product"
+            unit_cost = pa.accessory.cost
+            total += accessory_compute(unit_cost, pa.quantity)
+        return total
+
+    def save(self, *args, **kwargs):
+        material_price = self.compute_textile_cost()
+        accessory_price = self.compute_accessory_cost()
+        estimated_price = product_pricing(
+            self.product_margin,
+            self.labor_time,
+            self.miscellaneous_margin,
+            self.buffer,
+            material_price,
+            accessory_price
+        )
+        self.calculated_price = estimated_price
+        self.retail_price = estimated_price
+        super().save(*args, **kwargs)
+
 
 class ProductTextile(models.Model):
     """Creates the Product Textile Model."""
-    textile = models.ForeignKey(Textile, on_delete=models.CASCADE,
-                                related_name="textile")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE,
-                                related_name="products")
+    textile = models.ForeignKey(Textile, on_delete=models.CASCADE, related_name="textile")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="products")
     height = models.IntegerField(validators=[MinValueValidator(0)])
     width = models.IntegerField(validators=[MinValueValidator(0)])
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
@@ -75,10 +103,8 @@ class ProductTextile(models.Model):
 
 class ProductAccessory(models.Model):
     """Creates the Product Accessory Model."""
-    accessory = models.ForeignKey(Accessory, on_delete=models.CASCADE,
-                                  related_name="accessory")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE,
-                                related_name="product")
+    accessory = models.ForeignKey(Accessory, on_delete=models.CASCADE, related_name="accessory")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product")
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
 
 
@@ -97,6 +123,7 @@ class Order(models.Model):
         ("GH", "Gray House"),
         ("OL", "Online"),
     ]
+
     customer = models.CharField(max_length=255)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
@@ -110,30 +137,29 @@ class Order(models.Model):
         return self.customer
 
 
-def textile_compute(height, width,
-                    quantity):
+# Helper Functions
+def textile_compute(height, width, quantity):
     """Gets the total cost of textiles used."""
-    material_price = (height
-                    * width
-                    * quantity)
-    return material_price
+    return height * width * quantity
 
 
 def accessory_compute(cost, quantity):
     """Gets the total cost of accessories used."""
-    accessory_price = cost * quantity
-    return accessory_price
+    return cost * quantity
 
 
 def product_pricing(product_margin, labor_time,
-                    miscellaneous_margin, buffer):
+                    miscellaneous_margin, buffer,
+                    material_price, accessory_price):
     """Gets the calculated price of the product."""
-    raw_material = textile_compute + accessory_compute
+    raw_material = material_price + accessory_price
     estimated_selling = ((raw_material
-               + labor_time
-               + product_margin
-               + miscellaneous_margin)
-               / (1 + buffer))
-    VAT = 700
-    srp = estimated_selling + VAT
-    return srp
+                          + labor_time
+                          + product_margin
+                          + miscellaneous_margin)
+                         * (1 + buffer / 100))
+    return estimated_selling
+
+# Optionally:
+# def add_vat(price, vat=700):
+#     return price + vat

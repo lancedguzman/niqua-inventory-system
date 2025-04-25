@@ -1,6 +1,5 @@
 from django import forms
 from django.forms import inlineformset_factory
-from django.core.validators import MinValueValidator
 from .models import *
 
 
@@ -14,6 +13,9 @@ class ProductForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+        self.fields['retail_price'].widget.attrs['readonly'] = True
+        self.fields['calculated_price'].widget.attrs['readonly'] = True
 
 
 class EditProductForm(forms.ModelForm):
@@ -91,14 +93,14 @@ ProductTextileFormSet = inlineformset_factory(
     form=ProductTextileInlineForm,
     fields=['textile', 'height',
             'width', 'quantity'],
-    extra=1, can_delete=True
+    extra=1, can_delete=False # CHANGE
 )
 
 ProductAccessoryFormSet = inlineformset_factory(
     Product, ProductAccessory,
     form=ProductAccessoryInlineForm,
     fields=['accessory', 'quantity'],
-    extra=1, can_delete=True
+    extra=1, can_delete=False # CHANGE
 )
 
 
