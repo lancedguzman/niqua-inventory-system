@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from decimal import Decimal
 from .models import Product, Accessory, Textile, Order
 from .forms import *
+from .models import compute_product_price
+
 
 @login_required
 def dashboard(request):
@@ -16,32 +20,35 @@ def product_list(request):
                   {"products": products})
 
 
+@transaction.atomic
 def product_form(request):
     """Displays page to create a product along with associated textiles and accessories."""
-    if (request.method == "POST"):
-        # Instantiate forms
+    if request.method == "POST":
         product_form = ProductForm(request.POST)
         textile_formset = ProductTextileFormSet(request.POST, prefix="textile")
         accessory_formset = ProductAccessoryFormSet(request.POST, prefix="accessory")
 
-        # Check if all forms are valid
         if product_form.is_valid() and textile_formset.is_valid() and accessory_formset.is_valid():
-            # Save the Product
-            product = product_form.save()
+            # Save product without committing to DB yet
+            product = product_form.save(commit=False)
+            product.save()  # Save now to get a primary key (needed for formsets)
 
-            # Associate the product with the formsets
+            # Assign product to formsets
             textile_formset.instance = product
             accessory_formset.instance = product
 
-            # Save the formsets (ProductTextiles and ProductAccessories)
+            # Save formsets
             textile_formset.save()
             accessory_formset.save()
 
-            # Redirect to the product list page after successful creation
+            # Now that all related items are saved, compute the price
+            product.calculated_price = compute_product_price(product)
+            product.retail_price = (product.calculated_price * Decimal('1.12')).quantize(Decimal('0.01'))
+            product.save()
+
             return redirect("product-list")
 
     else:
-        # Instantiate empty forms
         product_form = ProductForm()
         textile_formset = ProductTextileFormSet(prefix="textile")
         accessory_formset = ProductAccessoryFormSet(prefix="accessory")

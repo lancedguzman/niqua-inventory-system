@@ -17,6 +17,10 @@ class ProductForm(forms.ModelForm):
         self.fields['retail_price'].widget.attrs['readonly'] = True
         self.fields['calculated_price'].widget.attrs['readonly'] = True
 
+        self.fields['retail_price'].required = False
+        self.fields['calculated_price'].required = False
+        self.fields['stock'].required = False
+
 
 class EditProductForm(forms.ModelForm):
     """Creates form to edit products."""
