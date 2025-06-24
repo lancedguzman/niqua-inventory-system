@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from decimal import Decimal
-from .models import Product, Accessory, Textile, Order
+from .models import Product, Accessory, Textile, Order, Labor
 from .forms import *
 from .models import compute_product_price
 
@@ -216,9 +216,67 @@ def material_delete(request, material_type, pk):
     return redirect("material-list")
 
 
+def labor_list(request):
+    """Displays list of labor cost."""
+    labors = Labor.objects.all()
+    return render(request, "labor_list.html",
+                  {"labors": labors})
+
+
+def labor_form(request):
+    """Displays form to edit labor."""
+    if (request.method == "POST"):
+        form = LaborForm(request.POST)
+
+        if form.is_valid():
+            labor = form.save(commit=False)
+
+            if labor.cost:
+                labor.unit = (labor.cost / (Decimal('8')) / Decimal('60'))
+            labor.save()
+            return redirect("labor-list")
+        
+    else:
+        form = LaborForm()
+
+    return render(request, "labor_form.html",
+                  {"labor_form": form})
+
+
+def labor_edit(request, pk):
+    """Displays form to edit labor."""   
+    labor = Labor.objects.get(pk=pk)
+    
+    if (request.method == "POST"):
+        labor_form = EditLaborForm(request.POST, instance=labor)
+
+        if labor_form.is_valid():
+            labor_form.save(commit=False)
+            if labor.cost:
+                labor.unit = (labor.cost / (Decimal('8')) / Decimal('60'))
+            labor.save()
+            return redirect("labor-list")
+
+    else:
+        labor_form = EditLaborForm(instance=labor)
+
+    return render(request, "labor_edit.html", {
+        "edit_form": labor_form
+    })
+
+
+def labor_delete(request, pk):
+    """Delete labor from the list."""
+    labor = Labor.objects.get(pk=pk)
+    labor.delete()
+    return redirect("labor-list")
+
+
 def stock_list(request):
     """Displays the current stock in inventory."""
-    return render(request, "stock_list.html")
+    products = Product.objects.all()
+    return render(request, "stock_list.html",
+                  {"products": products})
 
 
 def report_list(request):

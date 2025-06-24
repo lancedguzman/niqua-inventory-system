@@ -58,6 +58,64 @@ class AccessoryForm(forms.ModelForm):
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
 
+class EditTextileForm(forms.ModelForm):
+    """Creates form to edit Textile."""
+    class Meta:
+        model = Textile
+        fields = ["name", "cost",
+                  "unit", "stock",]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add Bootstrap classes to all fields
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+
+class EditAccessoryForm(forms.ModelForm):
+    """Creates form to edit Textile."""
+    class Meta:
+        model = Accessory
+        fields = ["name", "cost",
+                  "unit", "stock",]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add Bootstrap classes to all fields
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+
+class LaborForm(forms.ModelForm):
+    """Form to create labor."""
+    class Meta:
+        model = Labor
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+        self.fields['unit'].widget.attrs['readonly'] = True
+        self.fields['unit'].required = False
+
+
+class EditLaborForm(forms.ModelForm):
+    """Form to edit labor."""
+    class Meta:
+        model = Labor
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+        self.fields['unit'].widget.attrs['readonly'] = True
+        self.fields['unit'].required = False
+
+
 # -----------------------------
 # Inline Formsets with styling
 # -----------------------------
@@ -66,8 +124,9 @@ class ProductTextileInlineForm(forms.ModelForm):
     """Inline form for ProductTextile"""
     class Meta:
         model = ProductTextile
-        fields = ['textile', 'height',
-                  'width', 'quantity']
+        fields = ['textile', 'name', 
+                  'height','width',
+                  'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -79,7 +138,8 @@ class ProductAccessoryInlineForm(forms.ModelForm):
     """Inline form for ProductAccessory"""
     class Meta:
         model = ProductAccessory
-        fields = ['accessory', 'quantity']
+        fields = ['accessory', 'name',
+                  'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -95,15 +155,17 @@ class ProductAccessoryInlineForm(forms.ModelForm):
 ProductTextileFormSet = inlineformset_factory(
     Product, ProductTextile,
     form=ProductTextileInlineForm,
-    fields=['textile', 'height',
-            'width', 'quantity'],
+    fields = ['textile', 'name',
+              'height','width',
+              'quantity'],
     extra=1, can_delete=False # CHANGE
 )
 
 ProductAccessoryFormSet = inlineformset_factory(
     Product, ProductAccessory,
     form=ProductAccessoryInlineForm,
-    fields=['accessory', 'quantity'],
+    fields = ['accessory', 'name', 
+              'quantity'],
     extra=1, can_delete=False # CHANGE
 )
 

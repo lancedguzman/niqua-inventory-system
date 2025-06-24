@@ -16,6 +16,10 @@ urlpatterns = [
     path('material/<str:material_type>/add/', material_form, name='material-form'),
     path('material/<str:material_type>/<int:pk>/edit', material_edit, name='material-edit'),
     path('material/<str:material_type>/<int:pk>/delete', material_delete, name='material-delete'),
+    path('labor', labor_list, name='labor-list'),
+    path('labor/add/', labor_form, name='labor-form'),
+    path('labor/<int:pk>/edit', labor_edit, name='labor-edit'),
+    path('labor/<int:pk>/delete', labor_delete, name='labor-delete'),
     path('stock_in/', stock_list, name='stock-list'),
     path('reports/', report_list, name='report'),
 ]
