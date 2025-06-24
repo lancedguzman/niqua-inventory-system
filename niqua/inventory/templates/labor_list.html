@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block body_content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Labor List</h1> 
+
+    <div class="card shadow rounded">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Cost</th>
+                        <th>Unit</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for labor in labors %}
+                    <tr>
+                        <td>{{ labor.name }}</td>
+                        <td>₱ {{ labor.cost }}</td>
+                        <td>{{ labor.unit }}</td>
+                        <td><a href="{% url 'labor-edit' labor.pk %}" class="btn btn-sm btn-dark">Edit</a></td>
+                        <td><a href="{% url 'labor-delete' labor.pk %}" class="btn btn-sm btn-dark">Delete</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="d-flex justify-content-between mt-3">
+                <a href="{% url 'material-list' %}" class="btn btn-dark">Back</a>
+                <a href="{% url 'labor-form' %}" class="btn btn-dark">Add Labor</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
