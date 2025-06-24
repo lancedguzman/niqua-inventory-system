@@ -141,6 +141,8 @@ class ProductTextile(models.Model):
     """Creates the Product Textile Model."""
     textile = models.ForeignKey(Textile, on_delete=models.CASCADE,
                                 related_name="textile")
+    name = models.CharField(max_length=255, null=True,
+                            blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE,
                                 related_name="products")
     height = models.IntegerField(validators=[MinValueValidator(0)])
@@ -152,10 +154,24 @@ class ProductAccessory(models.Model):
     """Creates the Product Accessory Model."""
     accessory = models.ForeignKey(Accessory, on_delete=models.CASCADE,
                                   related_name="accessory")
+    name = models.CharField(max_length=255, null=True,
+                            blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE,
                                 related_name="product")
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
 
+
+class Labor(models.Model):
+    """Creates the Labor Model."""
+    name = models.CharField(max_length=255, null=True,
+                            blank=True)
+    cost = models.DecimalField(max_digits=6, decimal_places=2,
+                                 null=True, blank=True,
+                                 default=0)
+    unit = models.DecimalField(max_digits=6, decimal_places=2,
+                                 null=True, blank=True,
+                                 default=0)
+    
 
 class Order(models.Model):
     """Creates the Order Model."""

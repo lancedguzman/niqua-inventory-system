@@ -52,6 +52,12 @@ class ProductAccessoryAdmin(admin.ModelAdmin):
     model = ProductAccessory
     list_display = ('accessory', 'product',
                     'quantity',)
+    
+
+class LaborAdmin(admin.ModelAdmin):
+    """Creates the Labor Admin Panel."""
+    model = Labor
+    list_display = ('name', 'cost', 'unit')
 
 
 class OrderAdmin(admin.ModelAdmin):
@@ -71,6 +77,8 @@ admin.site.register(Accessory, AccessoryAdmin)
 admin.site.register(ProductTextile, ProductTextileAdmin)
 
 admin.site.register(ProductAccessory, ProductAccessoryAdmin)
+
+admin.site.register(Labor, LaborAdmin)
 
 admin.site.register(Order, OrderAdmin)
 
