@@ -24,11 +24,11 @@
                     </div>
                     <div class="col-md-3">
                         {{ product_form.calculated_price.label_tag }}
-                        <input type="text" class="form-control" value="{{ product_form.initial.calculated_price }}" disabled>
+                        <input type="text" class="form-control" value="{{ product_form.initial.calculated_price }}" readonly>
                     </div>
                     <div class="col-md-3">
                         {{ product_form.retail_price.label_tag }}
-                        <input type="text" class="form-control" value="{{ product_form.initial.retail_price }}" disabled>
+                        <input type="text" class="form-control" value="{{ product_form.initial.retail_price }}" readonly>
                     </div>
                 </div>
             </div>
@@ -65,30 +65,37 @@
             </div>
             <div class="card-body">
                 {{ textile_formset.management_form }}
-                <div id="textile-formset" class="d-flex flex-nowrap overflow-auto">
+                <div id="textile-formset" class="textile-forms">
                     {% for form in textile_formset %}
-                        <div class="card textile-form me-3 p-3" style="min-width: 320px;">
-                            <div class="mb-3">
-                                {{ form.name.label_tag }}
-                                {{ form.name }}
+                    <div class="row textile-form align-items-end mb-3 border p-3 position-relative">
+                        <!-- Top row with interactive dropdown + remove -->
+                        <div class="col-12 d-flex justify-content-between align-items-center mb-3">
+                            <!-- Interactive dropdown -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-dark btn-sm dropdown-toggle textile-dropdown-btn" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    Select Textile
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for val, label in form.textile.field.choices %}
+                                        <li><a class="dropdown-item textile-option" href="#" data-value="{{ val }}">{{ label }}</a></li>
+                                    {% endfor %}
+                                </ul>
                             </div>
-                            <div class="mb-3">
-                                {{ form.textile.label_tag }}
-                                {{ form.textile }}
-                            </div>
-                            <div class="mb-3">
-                                {{ form.height.label_tag }}
-                                {{ form.height }}
-                            </div>
-                            <div class="mb-3">
-                                {{ form.width.label_tag }}
-                                {{ form.width }}
-                            </div>
-                            <div class="mb-3">
-                                {{ form.quantity.label_tag }}
-                                {{ form.quantity }}
-                            </div>
+
+                            <!-- Remove button -->
+                            <button type="button" class="btn-close remove-textile" aria-label="Remove"></button>
                         </div>
+
+                        <!-- Hidden textile select field -->
+                        <div class="d-none">{{ form.textile }}</div>
+
+                        <!-- Rest of the form -->
+                        <div class="col-md-3">{{ form.name.label_tag }} {{ form.name }}</div>
+                        <div class="col-md-3">{{ form.height.label_tag }} {{ form.height }}</div>
+                        <div class="col-md-3">{{ form.width.label_tag }} {{ form.width }}</div>
+                        <div class="col-md-3 mt-3">{{ form.quantity.label_tag }} {{ form.quantity }}</div>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
@@ -102,22 +109,32 @@
             </div>
             <div class="card-body">
                 {{ accessory_formset.management_form }}
-                <div id="accessory-formset" class="d-flex flex-nowrap overflow-auto">
+                <div id="accessory-formset" class="accessory-forms">
                     {% for form in accessory_formset %}
-                        <div class="card accessory-form me-3 p-3" style="min-width: 300px;">
-                            <div class="mb-3">
-                                {{ form.name.label_tag }}
-                                {{ form.name }}
+                    <div class="row accessory-form align-items-end mb-3 border p-3 position-relative">
+                        <!-- Top row with interactive dropdown + remove -->
+                        <div class="col-12 d-flex justify-content-between align-items-center mb-3">
+                            <!-- Interactive dropdown -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-dark btn-sm dropdown-toggle accessory-dropdown-btn" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    Select Accessory
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for val, label in form.accessory.field.choices %}
+                                        <li><a class="dropdown-item accessory-option" href="#" data-value="{{ val }}">{{ label }}</a></li>
+                                    {% endfor %}
+                                </ul>
                             </div>
-                            <div class="mb-3">
-                                {{ form.accessory.label_tag }}
-                                {{ form.accessory }}
-                            </div>
-                            <div class="mb-3">
-                                {{ form.quantity.label_tag }}
-                                {{ form.quantity }}
-                            </div>
+
+                            <button type="button" class="btn-close remove-accessory" aria-label="Remove"></button>
                         </div>
+
+                        <div class="d-none">{{ form.accessory }}</div>
+
+                        <div class="col-md-4">{{ form.name.label_tag }} {{ form.name }}</div>
+                        <div class="col-md-4">{{ form.quantity.label_tag }} {{ form.quantity }}</div>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
@@ -133,33 +150,96 @@
     </form>
 </div>
 
-<!-- JavaScript for dynamic formset addition -->
+<!-- JavaScript for dynamic formset addition + deletion -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        function cloneFormset(prefix, containerId, addButtonId) {
-            const addButton = document.getElementById(addButtonId);
-            const container = document.getElementById(containerId);
-            const totalForms = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
 
-            addButton.addEventListener('click', function () {
-                const currentFormCount = parseInt(totalForms.value);
-                const formToClone = container.querySelector(`.${prefix}-form`);
-                const newForm = formToClone.cloneNode(true);
+document.addEventListener("DOMContentLoaded", function () {
+    // Handle textile dropdown selections
+    document.querySelectorAll("#textile-formset").forEach(set => {
+        set.addEventListener("click", function (e) {
+            if (e.target.classList.contains("textile-option")) {
+                e.preventDefault();
+                const selectedLabel = e.target.textContent;
+                const selectedValue = e.target.dataset.value;
 
-                newForm.querySelectorAll('input, select, textarea, label').forEach((el) => {
-                    if (el.name) el.name = el.name.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
-                    if (el.id) el.id = el.id.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
-                    if (el.htmlFor) el.htmlFor = el.htmlFor.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
-                    if (el.tagName !== 'LABEL') el.value = '';
-                });
+                const formCard = e.target.closest(".textile-form");
+                const dropdownBtn = formCard.querySelector(".textile-dropdown-btn");
+                const selectField = formCard.querySelector("select");
 
-                container.appendChild(newForm);
-                totalForms.value = currentFormCount + 1;
-            });
-        }
-
-        cloneFormset('textile', 'textile-formset', 'add-textile');
-        cloneFormset('accessory', 'accessory-formset', 'add-accessory');
+                dropdownBtn.textContent = selectedLabel;
+                selectField.value = selectedValue;
+            }
+        });
     });
+
+    // Handle accessory dropdown selections
+    document.querySelectorAll("#accessory-formset").forEach(set => {
+        set.addEventListener("click", function (e) {
+            if (e.target.classList.contains("accessory-option")) {
+                e.preventDefault();
+                const selectedLabel = e.target.textContent;
+                const selectedValue = e.target.dataset.value;
+
+                const formCard = e.target.closest(".accessory-form");
+                const dropdownBtn = formCard.querySelector(".accessory-dropdown-btn");
+                const selectField = formCard.querySelector("select");
+
+                dropdownBtn.textContent = selectedLabel;
+                selectField.value = selectedValue;
+            }
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    function cloneFormset(prefix, containerId, addButtonId, removeClass) {
+        const addButton = document.getElementById(addButtonId);
+        const container = document.getElementById(containerId);
+        const totalForms = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+
+        addButton.addEventListener('click', function () {
+            const currentFormCount = parseInt(totalForms.value);
+            const formToClone = container.querySelector(`.${prefix}-form`);
+            const newForm = formToClone.cloneNode(true);
+
+            newForm.querySelectorAll('input, select, textarea, label').forEach((el) => {
+                if (el.name) el.name = el.name.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
+                if (el.id) el.id = el.id.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
+                if (el.htmlFor) el.htmlFor = el.htmlFor.replace(`${prefix}-0-`, `${prefix}-${currentFormCount}-`);
+                if (el.tagName !== 'LABEL') el.value = '';
+            });
+
+            container.appendChild(newForm);
+            totalForms.value = currentFormCount + 1;
+            attachDeleteButtons(container, prefix, totalForms, removeClass);
+        });
+
+        attachDeleteButtons(container, prefix, totalForms, removeClass);
+    }
+
+    function attachDeleteButtons(container, prefix, totalForms, removeClass) {
+        container.querySelectorAll(`.${removeClass}`).forEach((btn) => {
+            btn.onclick = function () {
+                const formCard = btn.closest(`.${prefix}-form`);
+                formCard.remove();
+
+                // Reindex forms
+                const forms = container.querySelectorAll(`.${prefix}-form`);
+                totalForms.value = forms.length;
+
+                forms.forEach((form, index) => {
+                    form.querySelectorAll('input, select, textarea, label').forEach((el) => {
+                        if (el.name) el.name = el.name.replace(/-\d+-/, `-${index}-`);
+                        if (el.id) el.id = el.id.replace(/-\d+-/, `-${index}-`);
+                        if (el.htmlFor) el.htmlFor = el.htmlFor.replace(/-\d+-/, `-${index}-`);
+                    });
+                });
+            };
+        });
+    }
+
+    cloneFormset('textile', 'textile-formset', 'add-textile', 'remove-textile');
+    cloneFormset('accessory', 'accessory-formset', 'add-accessory', 'remove-accessory');
+});
 </script>
 {% endblock %}
