@@ -14,9 +14,9 @@ class ProductForm(forms.ModelForm):
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
+        # Optional fields (calculated post-save)
         self.fields['retail_price'].widget.attrs['readonly'] = True
         self.fields['calculated_price'].widget.attrs['readonly'] = True
-
         self.fields['retail_price'].required = False
         self.fields['calculated_price'].required = False
         self.fields['stock'].required = False
@@ -67,7 +67,6 @@ class EditTextileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add Bootstrap classes to all fields
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
@@ -121,25 +120,32 @@ class EditLaborForm(forms.ModelForm):
 # -----------------------------
 
 class ProductTextileInlineForm(forms.ModelForm):
-    """Inline form for ProductTextile"""
+    """Inline form for a single textile detail row."""
     class Meta:
         model = ProductTextile
-        fields = ['textile', 'name', 
-                  'height','width',
-                  'quantity']
+        fields = ['textile', 'name', 'height', 'width', 'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields:
-            self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+        # Hide the textile field (handled via shared dropdown)
+        self.fields['textile'].widget = forms.HiddenInput()
+        self.fields['textile'].widget.attrs.update({
+            'class': 'form-control textile-id-input'
+        })
+
+        # Add form-control class to all other fields
+        for field_name in ['name', 'height', 'width', 'quantity']:
+            self.fields[field_name].widget.attrs.update({
+                'class': 'form-control'
+            })
 
 
 class ProductAccessoryInlineForm(forms.ModelForm):
     """Inline form for ProductAccessory"""
     class Meta:
         model = ProductAccessory
-        fields = ['accessory', 'name',
-                  'quantity']
+        fields = ['accessory', 'name', 'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -155,18 +161,16 @@ class ProductAccessoryInlineForm(forms.ModelForm):
 ProductTextileFormSet = inlineformset_factory(
     Product, ProductTextile,
     form=ProductTextileInlineForm,
-    fields = ['textile', 'name',
-              'height','width',
-              'quantity'],
-    extra=1, can_delete=False # CHANGE
+    extra=1,
+    can_delete=False
 )
+
 
 ProductAccessoryFormSet = inlineformset_factory(
     Product, ProductAccessory,
     form=ProductAccessoryInlineForm,
-    fields = ['accessory', 'name', 
-              'quantity'],
-    extra=1, can_delete=False # CHANGE
+    extra=1,
+    can_delete=False
 )
 
 

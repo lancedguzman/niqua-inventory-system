@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+
+{% block body_content %}
+<div class="container">
+    <h1 class="mb-4">Add Product</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Product Information Section -->
+        <div class="card mb-5">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Product Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">{{ product_form.name.label_tag }} {{ product_form.name }}</div>
+                    <div class="col-md-3">{{ product_form.buffer.label_tag }} {{ product_form.buffer }}</div>
+                    <div class="col-md-3">{{ product_form.product_margin.label_tag }} {{ product_form.product_margin }}</div>
+                    <div class="col-md-3">{{ product_form.miscellaneous_margin.label_tag }} {{ product_form.miscellaneous_margin }}</div>
+                    <div class="col-md-3">{{ product_form.labor_time.label_tag }} {{ product_form.labor_time }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Textile Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Textiles</h5>
+                <button type="button" class="btn btn-sm btn-outline-dark" id="add-textile-group">Add Textile</button>
+            </div>
+            <div class="card-body">
+                {{ textile_formset.management_form }}
+                <div id="textile-groups-wrapper">
+                    {% for form in textile_formset.forms %}
+                    <div class="textile-group border p-3 mb-3" data-index="{{ forloop.counter0 }}">
+                        <div class="d-flex justify-content-between mb-2 textile-dropdown">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-dark dropdown-toggle textile-dropdown-btn" type="button" data-bs-toggle="dropdown">
+                                    {% if form.textile.value %} 
+                                        {{ form.instance.textile.name|default:"Select Textile" }}
+                                    {% else %}
+                                        Select Textile
+                                    {% endif %}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for val, label in form.textile.field.choices %}
+                                        <li><a class="dropdown-item" href="#" data-value="{{ val }}">{{ label }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <button class="btn-close remove-textile-group" type="button"></button>
+                        </div>
+
+                        <!-- Hidden select -->
+                        <div class="d-none">{{ form.textile }}</div>
+
+                        <div class="textile-details">
+                            <div class="row textile-form-row align-items-end mb-2">
+                                <div class="col-md-3">{{ form.name.label_tag }} {{ form.name }}</div>
+                                <div class="col-md-3">{{ form.height.label_tag }} {{ form.height }}</div>
+                                <div class="col-md-3">{{ form.width.label_tag }} {{ form.width }}</div>
+                                <div class="col-md-3">{{ form.quantity.label_tag }} {{ form.quantity }}</div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-sm btn-secondary add-detail-row mt-2">Add</button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Accessory Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Accessories</h5>
+                <button type="button" class="btn btn-sm btn-outline-dark" id="add-accessory">Add Accessory</button>
+            </div>
+            <div class="card-body">
+                {{ accessory_formset.management_form }}
+                <div id="accessory-formset" class="accessory-forms">
+                    {% for form in accessory_formset %}
+                    <div class="row accessory-form align-items-end mb-3 border p-3 position-relative">
+                        <div class="col-12 d-flex justify-content-between align-items-center mb-3">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-dark btn-sm dropdown-toggle accessory-dropdown-btn" type="button" data-bs-toggle="dropdown">
+                                    Select Accessory
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for val, label in form.accessory.field.choices %}
+                                        <li><a class="dropdown-item accessory-option" href="#" data-value="{{ val }}">{{ label }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <button type="button" class="btn-close remove-accessory" aria-label="Remove"></button>
+                        </div>
+                        <div class="d-none">{{ form.accessory }}</div>
+                        <div class="col-md-4">{{ form.name.label_tag }} {{ form.name }}</div>
+                        <div class="col-md-4">{{ form.quantity.label_tag }} {{ form.quantity }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'product-list' %}" class="btn btn-secondary">Back to Products</a>
+            <div><button type="submit" class="btn btn-primary btn-dark">Add Product</button></div>
+        </div>
+    </form>
+</div>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Textile dropdown behavior
+    document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("dropdown-item") && e.target.closest(".textile-dropdown")) {
+            e.preventDefault();
+            const item = e.target;
+            const value = item.dataset.value;
+            const label = item.textContent;
+            const group = item.closest(".textile-group");
+            const dropdownBtn = group.querySelector(".textile-dropdown-btn");
+            const textileInput = group.querySelector("input[name$='-textile']"); // Changed to input
+            
+            // Update the hidden input field
+            if (textileInput) {
+                textileInput.value = value;
+            }
+            
+            dropdownBtn.textContent = label;
+        }
+    });
+
+    // Add detail row inside textile group
+    document.getElementById("textile-groups-wrapper").addEventListener("click", function (e) {
+        if (e.target.classList.contains("add-detail-row")) {
+            const group = e.target.closest(".textile-group");
+            const details = group.querySelector(".textile-details");
+            const lastRow = details.querySelector(".textile-form-row:last-child");
+            const newRow = lastRow.cloneNode(true);
+            newRow.querySelectorAll("input").forEach(input => input.value = "");
+            details.appendChild(newRow);
+            const textileInput = newGroup.querySelector("input[name$='-textile']");
+                if (textileInput) {
+                    textileInput.value = "";
+                }
+        }
+    });
+
+    // Remove a textile group
+    document.getElementById("textile-groups-wrapper").addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-textile-group")) {
+            const group = e.target.closest(".textile-group");
+            group.remove();
+            reindexTextileForms();
+        }
+    });
+
+    // Add textile group
+    document.getElementById("add-textile-group").addEventListener("click", function () {
+        const wrapper = document.getElementById("textile-groups-wrapper");
+        const totalFormsInput = document.getElementById("id_textile-TOTAL_FORMS");
+        const formCount = parseInt(totalFormsInput.value);
+        const firstGroup = wrapper.querySelector(".textile-group");
+        const newGroup = firstGroup.cloneNode(true);
+
+        // Update name/id/for
+        newGroup.querySelectorAll("[name], [id], label").forEach((el) => {
+            if (el.name) el.name = el.name.replace(/textile-\d+-/, `textile-${formCount}-`);
+            if (el.id) el.id = el.id.replace(/textile-\d+-/, `textile-${formCount}-`);
+            if (el.htmlFor) el.htmlFor = el.htmlFor.replace(/textile-\d+-/, `textile-${formCount}-`);
+
+            // Reset input fields
+            if (el.tagName !== 'LABEL') el.value = '';
+        });
+
+        // Reset dropdown label
+        newGroup.querySelector(".textile-dropdown-btn").textContent = "Select Textile";
+
+        // Reset hidden select field
+        const textileSelect = newGroup.querySelector("select[name$='-textile']");
+        if (textileSelect) {
+            textileSelect.value = "";
+        }
+
+        wrapper.appendChild(newGroup);
+        totalFormsInput.value = formCount + 1;
+    });
+
+    // Accessory dropdown
+    document.querySelectorAll("#accessory-formset").forEach(set => {
+        set.addEventListener("click", function (e) {
+            if (e.target.classList.contains("accessory-option")) {
+                e.preventDefault();
+                const label = e.target.textContent;
+                const value = e.target.dataset.value;
+                const formCard = e.target.closest(".accessory-form");
+                const dropdownBtn = formCard.querySelector(".accessory-dropdown-btn");
+                const selectField = formCard.querySelector("select");
+                dropdownBtn.textContent = label;
+                selectField.value = value;
+            }
+        });
+    });
+
+    // Clone accessory formset
+    cloneFormset('accessory', 'accessory-formset', 'add-accessory', 'remove-accessory');
+
+    function cloneFormset(prefix, containerId, addButtonId, removeClass) {
+        const addButton = document.getElementById(addButtonId);
+        const container = document.getElementById(containerId);
+        const totalForms = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+        addButton.addEventListener('click', function () {
+            const formCount = parseInt(totalForms.value);
+            const formToClone = container.querySelector(`.${prefix}-form`);
+            const newForm = formToClone.cloneNode(true);
+            newForm.querySelectorAll('input, select, textarea, label').forEach((el) => {
+                if (el.name) el.name = el.name.replace(`${prefix}-0-`, `${prefix}-${formCount}-`);
+                if (el.id) el.id = el.id.replace(`${prefix}-0-`, `${prefix}-${formCount}-`);
+                if (el.htmlFor) el.htmlFor = el.htmlFor.replace(`${prefix}-0-`, `${prefix}-${formCount}-`);
+                if (el.tagName !== 'LABEL') el.value = '';
+            });
+            container.appendChild(newForm);
+            totalForms.value = formCount + 1;
+            attachDeleteButtons(container, prefix, totalForms, removeClass);
+        });
+
+        attachDeleteButtons(container, prefix, totalForms, removeClass);
+    }
+
+    function attachDeleteButtons(container, prefix, totalForms, removeClass) {
+        container.querySelectorAll(`.${removeClass}`).forEach((btn) => {
+            btn.onclick = function () {
+                const formCard = btn.closest(`.${prefix}-form`);
+                formCard.remove();
+                const forms = container.querySelectorAll(`.${prefix}-form`);
+                totalForms.value = forms.length;
+                forms.forEach((form, index) => {
+                    form.querySelectorAll('input, select, textarea, label').forEach((el) => {
+                        if (el.name) el.name = el.name.replace(/-\d+-/, `-${index}-`);
+                        if (el.id) el.id = el.id.replace(/-\d+-/, `-${index}-`);
+                        if (el.htmlFor) el.htmlFor = el.htmlFor.replace(/-\d+-/, `-${index}-`);
+                    });
+                });
+            };
+        });
+    }
+
+    function reindexTextileForms() {
+        const wrapper = document.getElementById("textile-groups-wrapper");
+        const textileGroups = wrapper.querySelectorAll(".textile-group");
+        textileGroups.forEach((group, index) => {
+            group.querySelectorAll("[name], [id], label").forEach((el) => {
+                if (el.name) el.name = el.name.replace(/textile-\d+-/, `textile-${index}-`);
+                if (el.id) el.id = el.id.replace(/textile-\d+-/, `textile-${index}-`);
+                if (el.htmlFor) el.htmlFor = el.htmlFor.replace(/textile-\d+-/, `textile-${index}-`);
+            });
+            group.dataset.index = index;
+        });
+        document.getElementById("id_textile-TOTAL_FORMS").value = textileGroups.length;
+    }
+});
+</script>
+{% endblock %}

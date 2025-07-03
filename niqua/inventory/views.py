@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from decimal import Decimal
+from collections import defaultdict
 from .models import Product, Accessory, Textile, Order, Labor
 from .forms import *
 from .models import compute_product_price
@@ -22,31 +23,55 @@ def product_list(request):
 
 @transaction.atomic
 def product_form(request):
-    """Displays page to create a product along with associated textiles and accessories."""
+    """Displays page to create a product along with grouped textiles and accessories."""
     if request.method == "POST":
         product_form = ProductForm(request.POST)
-        textile_formset = ProductTextileFormSet(request.POST, prefix="textile")
         accessory_formset = ProductAccessoryFormSet(request.POST, prefix="accessory")
 
-        if product_form.is_valid() and textile_formset.is_valid() and accessory_formset.is_valid():
-            # Save product without committing to DB yet
-            product = product_form.save(commit=False)
-            product.save()  # Save now to get a primary key (needed for formsets)
+        # Extract flat textile POST data
+        textile_formset = ProductTextileFormSet(request.POST, prefix="textile")
 
-            # Assign product to formsets
-            textile_formset.instance = product
-            accessory_formset.instance = product
+        try:
+            for i, form in enumerate(ProductTextileFormSet(request.POST, prefix="textile")):
+                print(f"Textile form {i} POST value:", form.data.get(f"textile-{i}-textile"))
+            for key in request.POST:
+                print(f"{key}: {request.POST[key]}")
 
-            # Save formsets
-            textile_formset.save()
-            accessory_formset.save()
+            if product_form.is_valid() and textile_formset.is_valid() and accessory_formset.is_valid():
+                product = product_form.save(commit=False)
+                product.save()
 
-            # Now that all related items are saved, compute the price
-            product.calculated_price = compute_product_price(product)
-            product.retail_price = (product.calculated_price * Decimal('1.12')).quantize(Decimal('0.01'))
-            product.save()
+                # Save accessories
+                accessory_formset.instance = product
+                accessory_formset.save()
 
-            return redirect("product-list")
+                # Group textile forms by textile field
+                grouped = defaultdict(list)
+                for form in textile_formset:
+                    textile = form.cleaned_data.get("textile")
+                    if textile:
+                        grouped[textile].append(form)
+
+                for textile, forms in grouped.items():
+                    for form in forms:
+                        instance = form.save(commit=False)
+                        instance.product = product
+                        instance.textile = textile
+                        instance.save()
+
+                # Calculate price
+                product.calculated_price = Decimal(compute_product_price(product))
+                product.retail_price = Decimal((product.calculated_price * Decimal('1.12')).quantize(Decimal('0.01')))
+                product.save()
+
+                return redirect("product-list")
+            else:
+                print("Form errors:", product_form.errors, textile_formset.errors, accessory_formset.errors)
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print("Exception during save:", e)
 
     else:
         product_form = ProductForm()
@@ -55,7 +80,7 @@ def product_form(request):
 
     return render(request, "product_form.html", {
         "product_form": product_form,
-        "textile_formset": textile_formset,
+        "textile_formset": textile_formset,  # still a flat formset in HTML
         "accessory_formset": accessory_formset,
     })
 
