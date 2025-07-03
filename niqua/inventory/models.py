@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 
 class Profile(models.Model):
@@ -49,16 +49,16 @@ class Product(models.Model):
     name = models.CharField(max_length=50)
     stock = models.IntegerField(null=True, blank=True,
                                 default=0)
-    calculated_price = models.DecimalField(max_digits=6, decimal_places=2,
+    calculated_price = models.DecimalField(max_digits=10, decimal_places=2,
                                            null=True, blank=True,
-                                           default=0)
-    retail_price = models.DecimalField(max_digits=6, decimal_places=2,
+                                           default=Decimal("0.00"))
+    retail_price = models.DecimalField(max_digits=10, decimal_places=2,
                                        null=True, blank=True,
-                                       default=0)
-    product_margin = models.DecimalField(max_digits=6, decimal_places=2)
-    labor_time = models.DecimalField(max_digits=6, decimal_places=2)
-    miscellaneous_margin = models.DecimalField(max_digits=6, decimal_places=2)
-    buffer = models.DecimalField(max_digits=6, decimal_places=2)
+                                       default=Decimal("0.00"))
+    product_margin = models.DecimalField(max_digits=10, decimal_places=2)
+    labor_time = models.DecimalField(max_digits=10, decimal_places=2)
+    miscellaneous_margin = models.DecimalField(max_digits=10, decimal_places=2)
+    buffer = models.DecimalField(max_digits=10, decimal_places=2)
     last_updated = models.DateField(auto_now=True)
     
     class Meta:
@@ -70,13 +70,13 @@ class Product(models.Model):
 
 def textile_compute(height, width, quantity):
     """Gets the total cost of textiles used."""
-    material_price = height * width * quantity
+    material_price = height * width * Decimal(quantity)
     return material_price
 
 
 def accessory_compute(cost, quantity):
     """Gets the total cost of accessories used."""
-    accessory_price = cost * quantity
+    accessory_price = cost * Decimal(quantity)
     return accessory_price
 
 
@@ -101,7 +101,7 @@ def compute_product_price(product):
     for item in textile_items:
         area = Decimal(item.height) * Decimal(item.width)
         quantity = Decimal(item.quantity)
-        cost_per_unit = item.textile.cost
+        cost_per_unit = Decimal(item.textile.cost)
         unit = item.textile.unit
         
         # Convert area based on unit
@@ -112,7 +112,7 @@ def compute_product_price(product):
         else:  # "INCH"
             area_in_sqft = area
 
-        textile_cost += cost_per_unit * area_in_sqft * quantity
+        textile_cost += cost_per_unit * area_in_sqft * Decimal(quantity)
 
     # Calculate total accessory cost
     accessory_items = ProductAccessory.objects.filter(product=product)
@@ -128,13 +128,13 @@ def compute_product_price(product):
 
     # Apply final pricing formula
     calculated_price = (
-        raw_material_cost
-        + product.labor_time
-        + product.product_margin
-        + product.miscellaneous_margin
-    ) * product.buffer
-
-    return calculated_price.quantize(Decimal("0.01"))
+        Decimal(raw_material_cost)
+        + Decimal(product.labor_time)
+        + Decimal(product.product_margin)
+        + Decimal(product.miscellaneous_margin)
+    ) * Decimal(product.buffer)
+    
+    return calculated_price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     
 
 class ProductTextile(models.Model):
@@ -145,8 +145,12 @@ class ProductTextile(models.Model):
                             blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE,
                                 related_name="products")
-    height = models.IntegerField(validators=[MinValueValidator(0)])
-    width = models.IntegerField(validators=[MinValueValidator(0)])
+    height = models.DecimalField(max_digits=6, decimal_places=2,
+                                       null=True, blank=True,
+                                       default=0.00)
+    width = models.DecimalField(max_digits=6, decimal_places=2,
+                                       null=True, blank=True,
+                                       default=0.00)
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
 
 
