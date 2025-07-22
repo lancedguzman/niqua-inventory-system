@@ -10,7 +10,6 @@
                 <thead class="table-dark">
                     <tr>
                         <th>Name</th>
-                        <th>Stock</th>
                         <th>Cost</th>
                         <th>Unit</th>
                         <th></th>
@@ -21,7 +20,6 @@
                     {% for textile in textiles %}
                     <tr>
                         <td>{{ textile.name }}</td>
-                        <td>{{ textile.stock }}</td>
                         <td>₱ {{ textile.cost }}</td>
                         <td>{{ textile.get_unit_display }}</td>
                         <td><a href="{% url 'material-edit' 'textile' textile.pk %}" class="btn btn-sm btn-dark">Edit</a></td>
@@ -32,7 +30,6 @@
                     {% for accessory in accessories %}
                     <tr>
                         <td>{{ accessory.name }}</td>
-                        <td>{{ accessory.stock }}</td>
                         <td>₱ {{ accessory.cost }}</td>
                         <td>{{ accessory.get_unit_display }}</td>
                         <td><a href="{% url 'material-edit' 'accessory' accessory.pk %}" class="btn btn-sm btn-dark">Edit</a></td>
@@ -41,7 +38,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-            <div class="d-flex justify-content-end mt-3">
+            <div class="d-flex justify-content-between mt-3">
                 <div class="dropdown">
                     <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Add Material
@@ -51,8 +48,9 @@
                         <li><a class="dropdown-item" href="{% url 'material-form' 'accessory' %}">Add Accessory</a></li>
                     </ul>
                 </div>
+                    <a href="{% url 'labor-list' %}" class="btn btn-dark">View Labor</a>
+                </div>
             </div>
-            
         </div>
     </div>
 </div>

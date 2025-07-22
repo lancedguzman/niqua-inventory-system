@@ -8,7 +8,7 @@
         {% csrf_token %}
 
         <!-- Product Information Section -->
-        <div class="card mb-5">
+        <div class="card mb-4">
             <div class="card-header bg-light">
                 <h5 class="mb-0">Product Information</h5>
             </div>
@@ -71,10 +71,10 @@
             </div>
         </div>
 
-        <!-- Accessory Section -->
+        <!-- Accessory / Piece Section -->
         <div class="card mb-4">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Accessories</h5>
+                <h5 class="mb-0">Accessories (Piece)</h5>
                 <button type="button" class="btn btn-sm btn-outline-dark" id="add-accessory">Add Accessory</button>
             </div>
             <div class="card-body">
@@ -103,6 +103,39 @@
                 </div>
             </div>
         </div>
+
+        <!-- Accessory / Inch Section
+        <div class="card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Accessories (Inch)</h5>
+                <button type="button" class="btn btn-sm btn-outline-dark" id="add-accessory">Add Accessory</button>
+            </div>
+            <div class="card-body">
+                {{ accessory_formset.management_form }}
+                <div id="accessory-formset" class="accessory-forms">
+                    {% for form in accessory_formset %}
+                    <div class="row accessory-form align-items-end mb-3 border p-3 position-relative">
+                        <div class="col-12 d-flex justify-content-between align-items-center mb-3">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-dark btn-sm dropdown-toggle accessory-dropdown-btn" type="button" data-bs-toggle="dropdown">
+                                    Select Accessory
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for val, label in form.accessory.field.choices %}
+                                        <li><a class="dropdown-item accessory-option" href="#" data-value="{{ val }}">{{ label }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <button type="button" class="btn-close remove-accessory" aria-label="Remove"></button>
+                        </div>
+                        <div class="d-none">{{ form.accessory }}</div>
+                        <div class="col-md-4">{{ form.name.label_tag }} {{ form.name }}</div>
+                        <div class="col-md-4">{{ form.quantity.label_tag }} {{ form.quantity }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div> -->
 
         <!-- Form Actions -->
         <div class="d-flex justify-content-between">
