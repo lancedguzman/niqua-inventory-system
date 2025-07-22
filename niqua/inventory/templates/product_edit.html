@@ -7,12 +7,34 @@
     <form method="post">
         {% csrf_token %}
         
-        <div class="card mb-4">
+        <!-- Product Information Section -->
+        <div class="card mb-5">
             <div class="card-header bg-light">
                 <h5 class="mb-0">Product Information</h5>
             </div>
             <div class="card-body">
-                {{ edit_form.as_p }}
+                <div class="row">
+                    <div class="col-md-3">
+                        {{ edit_form.name.label_tag }}
+                        {{ edit_form.name }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ edit_form.buffer.label_tag }}
+                        {{ edit_form.buffer }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ edit_form.product_margin.label_tag }}
+                        {{ edit_form.product_margin }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ edit_form.labor_time.label_tag }}
+                        {{ edit_form.labor_time }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ edit_form.miscellaneous_margin.label_tag }}
+                        {{ edit_form.miscellaneous_margin }}
+                    </div>
+                </div>
             </div>
         </div>
 

@@ -1,14 +1,122 @@
 {% extends 'base.html' %}
 
 {% block body_content %}
-<h1>Hello, User!</h1>
-<h2>Welcome Back!</h2>
 
-<a href="{% url 'dashboard' %}">Dashboard</a>
-<a href="{% url 'product-list' %}">Products</a>
-<a href="{% url 'order-list' %}">Job Orders</a>
-<a href="{% url 'material-list' %}">Materials</a>
-<a href="{% url 'stock-list' %}">Stock-In</a>
-<a href="{% url 'report' %}">Reports</a>
+<div class="container-fluid">
+    <div class="row pb-4 pt-3">
+        <!-- Left container -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <h1>Welcome Back, User!</h1>
+                            {% load tz %}
+                            <h1>Today is {% now "l, F j, Y" %}</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right container -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Links</h5>
+                    <div class="row">
+                        <div class="col-12 d-flex flex-column gap-2">
+                            <a href="{% url 'dashboard' %}">Dashboard</a>
+                            <a href="{% url 'product-list' %}">Products</a>
+                            <a href="{% url 'order-list' %}">Job Orders</a>
+                            <a href="{% url 'material-list' %}">Materials</a>
+                            <a href="{% url 'stock-list' %}">Stock-In</a>
+                            <a href="{% url 'report' %}">Reports</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+</div>
+
+<!-- First bottom large card container -->
+<div class="row pb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Material List Updates</h4>
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>First Created</th>
+                            <th>Last Updated</th>
+                            <th>Time Length</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                        <tbody>
+                            {% for textile in textiles%}
+                            <tr>
+                                <td>{{ textile.name }}</td>
+                                <td>{{ textile.first_created }}</td>
+                                <td>{{ textile.last_update }}</td>
+                                <td>{{ textile.time_length }} day(s)</td>
+                            </tr>
+                            {% endfor %}
+
+                            {% for accessory in accessories %}
+                            <tr>
+                                <td>{{ accessory.name }}</td>
+                                <td>{{ accessory.first_created }}</td>
+                                <td>{{ accessory.last_update }}</td>
+                                <td>{{ accessory.time_length }} day(s)</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Second bottom large card container -->
+<div class="row pb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Product List Updates</h4>
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>First Created</th>
+                            <th>Last Updated</th>
+                            <th>Time Length</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td>{{ product.name }}</td>
+                                <td>{{ product.first_created }}</td>
+                                <td>{{ product.last_update }}</td>
+                                <td>{{ product.time_length }} day(s)</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No products found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

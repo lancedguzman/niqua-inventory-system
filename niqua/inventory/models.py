@@ -21,10 +21,17 @@ class Textile(models.Model):
     cost = models.DecimalField(max_digits=6, decimal_places=3)
     unit = models.CharField(max_length=4, choices=UNIT_CHOICES,
                             default="FT")
-    stock = models.IntegerField(validators=[MinValueValidator(0)])
+    stock = models.IntegerField(validators=[MinValueValidator(0)], null=True,
+                                default=1)
+    first_created = models.DateField(auto_now_add=True)
+    last_update= models.DateField(auto_now=True)
 
     def __str__(self):
         return self.name
+    
+    def time_length(self):
+        """Returns when it was last updated."""
+        return (self.last_update - self.first_created).days if self.first_created and self.last_update else 0
 
 
 class Accessory(models.Model):
@@ -38,10 +45,17 @@ class Accessory(models.Model):
     cost = models.DecimalField(max_digits=6, decimal_places=3)
     unit = models.CharField(max_length=4, choices=UNIT_CHOICES,
                             default="PC")
-    stock = models.IntegerField(validators=[MinValueValidator(0)])
+    stock = models.IntegerField(validators=[MinValueValidator(0)], null=True,
+                                default=1)
+    first_created = models.DateField(auto_now_add=True)
+    last_update= models.DateField(auto_now=True, null=True)
 
     def __str__(self):
         return self.name
+    
+    def time_length(self):
+        """Returns when it was last updated."""
+        return (self.last_update - self.first_created).days if self.first_created and self.last_update else 0
 
 
 class Product(models.Model):
@@ -59,13 +73,18 @@ class Product(models.Model):
     labor_time = models.DecimalField(max_digits=10, decimal_places=2)
     miscellaneous_margin = models.DecimalField(max_digits=10, decimal_places=2)
     buffer = models.DecimalField(max_digits=10, decimal_places=2)
-    last_updated = models.DateField(auto_now=True)
+    first_created = models.DateField(auto_now_add=True)
+    last_update= models.DateField(auto_now=True, null=True)
     
     class Meta:
         ordering = ["name"]
 
     def __str__(self):
         return self.name
+    
+    def time_length(self):
+        """Returns when it was last updated."""
+        return (self.last_update - self.first_created).days if self.first_created and self.last_update else 0
     
 
 def textile_compute(height, width, quantity):
@@ -133,7 +152,11 @@ def compute_product_price(product):
         + Decimal(product.product_margin)
         + Decimal(product.miscellaneous_margin)
     ) * Decimal(product.buffer)
+
+    VAT = Decimal("0.12") * calculated_price
+    SRP = Decimal(VAT + calculated_price)
     
+    # return SRP.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     return calculated_price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     
 

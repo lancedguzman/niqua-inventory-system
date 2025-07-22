@@ -11,7 +11,14 @@ from .models import compute_product_price
 @login_required
 def dashboard(request):
     """Displays the dashboard."""
-    return render(request, "dashboard.html")
+    textiles = Textile.objects.all().order_by("-last_update")
+    accessories = Accessory.objects.all().order_by("-last_update")
+    products = Product.objects.all().order_by("-last_update")
+    return render(request, "dashboard.html", {
+        "textiles": textiles,
+        "accessories": accessories,
+        "products": products
+        })
 
 
 def product_list(request):

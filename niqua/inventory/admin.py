@@ -21,22 +21,24 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name','stock',
                     'retail_price', 'calculated_price',
                     'product_margin', 'labor_time',
-                    'miscellaneous_margin', 'last_updated',
-                    'buffer',)
+                    'miscellaneous_margin', 'first_created',
+                    'buffer', 'last_update',)
 
 
 class TextileAdmin(admin.ModelAdmin):
     """Creates the Textile Admin Panel."""
     model = Textile
     list_display = ('name', 'cost',
-                    'unit','stock',)
+                    'unit','stock',
+                    'first_created', 'last_update',)
 
 
 class AccessoryAdmin(admin.ModelAdmin):
     """Creates the Accessory Admin Panel."""
     model = Accessory
     list_display = ('name', 'cost',
-                    'unit','stock',)
+                    'unit','stock',
+                    'first_created', 'last_update',)
 
 
 class ProductTextileAdmin(admin.ModelAdmin):

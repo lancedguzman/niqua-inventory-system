@@ -22,8 +22,8 @@
                     <tr>
                         <th>{{ forloop.counter }}</th>
                         <td>{{ product.name }}</td>
-                        <td>₱ {{ product.calculated_price|floatformat:2 }}</td>
-                        <td>₱ {{ product.retail_price|floatformat:2 }}</td>
+                        <td>₱ {{ product.calculated_price|default_if_none:"0.00"|floatformat:2 }}</td>
+                        <td>₱ {{ product.retail_price|default_if_none:"0.00"|floatformat:2 }}</td>
                         <td><a href="{% url 'product-edit' product.id %}" class="btn btn-sm btn-dark">Edit</a></td>
                         <td><a href="{% url 'product-delete' product.id %}" class="btn btn-sm btn-dark">Delete</a></td>
                     </tr>
