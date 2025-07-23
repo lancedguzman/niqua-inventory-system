@@ -87,79 +87,6 @@ class Product(models.Model):
         return (self.last_update - self.first_created).days if self.first_created and self.last_update else 0
     
 
-def textile_compute(height, width, quantity):
-    """Gets the total cost of textiles used."""
-    material_price = height * width * Decimal(quantity)
-    return material_price
-
-
-def accessory_compute(cost, quantity):
-    """Gets the total cost of accessories used."""
-    accessory_price = cost * Decimal(quantity)
-    return accessory_price
-
-
-def product_pricing(product_margin, labor_time,
-                    miscellaneous_margin, buffer):
-    """Gets the calculated price of the product."""
-    raw_material = textile_compute + accessory_compute
-    estimated_selling = (raw_material
-               + labor_time
-               + product_margin
-               + miscellaneous_margin
-               * buffer)
-    return estimated_selling
-
-
-def compute_product_price(product):
-    """Computes the calculated price of a product from its components."""
-    # Calculate total textile cost
-    textile_items = ProductTextile.objects.filter(product=product)
-    textile_cost = Decimal("0.00")
-    
-    for item in textile_items:
-        area = Decimal(item.height) * Decimal(item.width)
-        quantity = Decimal(item.quantity)
-        cost_per_unit = Decimal(item.textile.cost)
-        unit = item.textile.unit
-        
-        # Convert area based on unit
-        if unit == "FT":
-            area_in_sqft = area / Decimal("144")  # assuming inches to square feet
-        elif unit == "M":
-            area_in_sqft = area * Decimal("10.7639")  # assuming square meters to square feet
-        else:  # "INCH"
-            area_in_sqft = area
-
-        textile_cost += cost_per_unit * area_in_sqft * Decimal(quantity)
-
-    # Calculate total accessory cost
-    accessory_items = ProductAccessory.objects.filter(product=product)
-    accessory_cost = Decimal("0.00")
-    
-    for item in accessory_items:
-        cost_per_unit = item.accessory.cost
-        quantity = Decimal(item.quantity)
-        accessory_cost += cost_per_unit * quantity
-
-    # Total raw material cost
-    raw_material_cost = textile_cost + accessory_cost
-
-    # Apply final pricing formula
-    calculated_price = (
-        Decimal(raw_material_cost)
-        + Decimal(product.labor_time)
-        + Decimal(product.product_margin)
-        + Decimal(product.miscellaneous_margin)
-    ) * Decimal(product.buffer)
-
-    VAT = Decimal("0.12") * calculated_price
-    SRP = Decimal(VAT + calculated_price)
-    
-    # return SRP.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    return calculated_price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    
-
 class ProductTextile(models.Model):
     """Creates the Product Textile Model."""
     textile = models.ForeignKey(Textile, on_delete=models.CASCADE,
@@ -186,6 +113,135 @@ class ProductAccessory(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE,
                                 related_name="product")
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
+
+
+def compute_product_price(product):
+    """Computes the calculated price of a product from its components with debug output."""
+    textile_items = ProductTextile.objects.filter(product=product)
+    textile_cost = Decimal("0.00")
+    total_area = Decimal("0.00")
+
+    print(f"\n📦 Computing textile cost for product: {product.name}")
+
+    for item in textile_items:
+        height = Decimal(item.height)
+        width = Decimal(item.width)
+        quantity = Decimal(item.quantity)
+        cost_per_unit = Decimal(item.textile.cost)
+        unit = item.textile.unit
+
+        # Convert area to square feet
+        area_in_sq_inches = height * width
+        if unit == "FT":
+            area_per_piece_sqft = area_in_sq_inches / Decimal("144")
+        elif unit == "M":
+            area_per_piece_sqft = area_in_sq_inches * Decimal("10.7639")
+        else:  # INCH assumed
+            area_per_piece_sqft = area_in_sq_inches / Decimal("144")
+
+        line_area = area_per_piece_sqft * quantity
+        total_area += line_area
+        line_cost = line_area * cost_per_unit
+        textile_cost += line_cost
+
+        print(f"  - Textile: {item.textile.name}")
+        print(f"    Dimensions (H x W): {height} in x {width} in")
+        print(f"    Area per piece: {area_per_piece_sqft:.4f} sq ft")
+        print(f"    Quantity: {quantity}")
+        print(f"    Line area: {line_area:.4f} sq ft")
+        print(f"    Unit Cost: {cost_per_unit}, Line Cost: {line_cost:.2f}")
+
+    # Apply buffer after all items are processed
+    buffer_multiplier = Decimal("1.00") + (Decimal(product.buffer) / Decimal("100"))
+    buffered_area = total_area * buffer_multiplier
+    textile_cost *= buffer_multiplier
+
+    print(f"➡️ Total Area: {total_area:.4f} sq ft")
+    print(f"➡️ Buffered Area (with {product.buffer}% buffer): {buffered_area:.4f} sq ft")
+    print(f"💵 Textile Cost (with buffer): {textile_cost:.2f}")
+
+    # Accessory cost
+    accessory_items = ProductAccessory.objects.filter(product=product)
+    accessory_cost = Decimal("0.00")
+    
+    for item in accessory_items:
+        cost_per_unit = item.accessory.cost
+        quantity = Decimal(item.quantity)
+        accessory_cost += cost_per_unit * quantity
+
+    print(f"💡 Accessory Cost: {accessory_cost:.2f}")
+
+    # Total raw material
+    raw_material_cost = textile_cost + accessory_cost
+
+    # Base calculated price (pre-margin)
+    raw_price = (
+        raw_material_cost
+        + Decimal(product.labor_time)
+        + Decimal(product.miscellaneous_margin)
+    )
+
+    # Apply product margin as percentage
+    margin_multiplier = Decimal("1.00") + (Decimal(product.product_margin) / Decimal("100"))
+    calculated_price = raw_price * margin_multiplier
+    calculated_price = calculated_price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    print(f"🧾 Raw Price (before margin): {raw_price:.2f}\n")
+    print(f"🧾 Calculated Price (after margin): {calculated_price:.2f}\n")
+
+    return calculated_price
+
+
+# Original Attempt
+# def compute_product_price(product):
+    """Computes the calculated price of a product from its components."""
+    # Calculate total textile cost
+    textile_items = ProductTextile.objects.filter(product=product)
+    textile_cost = Decimal("0.00")
+    
+    for item in textile_items:
+        area = Decimal(item.height) * Decimal(item.width)
+        quantity = Decimal(item.quantity)
+        cost_per_unit = Decimal(item.textile.cost)
+        unit = item.textile.unit
+        
+        # Convert area based on unit
+        if unit == "FT":
+            area_in_sqft = area / Decimal("144")  # assuming inches to square feet
+        elif unit == "M":
+            area_in_sqft = area * Decimal("10.7639")  # assuming square meters to square feet
+        else:  # "INCH"
+            area_in_sqft = area
+
+        textile_cost += cost_per_unit * area_in_sqft * Decimal(quantity)
+        textile_cost *= product.buffer
+
+    # Calculate total accessory cost
+    accessory_items = ProductAccessory.objects.filter(product=product)
+    accessory_cost = Decimal("0.00")
+    
+    for item in accessory_items:
+        cost_per_unit = item.accessory.cost
+        quantity = Decimal(item.quantity)
+        accessory_cost += cost_per_unit * quantity
+
+    # Total raw material cost
+    raw_material_cost = textile_cost + accessory_cost
+
+    # Apply pricing formula
+    raw_price = (
+        Decimal(raw_material_cost)
+        + Decimal(product.labor_time)
+        + Decimal(product.miscellaneous_margin))
+    
+    # Apply Product Margin
+    calculated_price = (Decimal(raw_price)* (Decimal("1.00") + Decimal(product.product_margin)))
+
+    # VAT = Decimal("0.12") * raw_price
+    # SRP = Decimal(VAT + raw_price)
+    
+    # return SRP.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    return calculated_price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 class Labor(models.Model):

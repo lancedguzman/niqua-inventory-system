@@ -39,6 +39,10 @@ def product_form(request):
         textile_formset = ProductTextileFormSet(request.POST, prefix="textile")
 
         try:
+            print("TOTAL_FORMS:", request.POST.get("textile-TOTAL_FORMS"))
+            print("📋 All textile form POST data:")
+            for i, form in enumerate(textile_formset):
+                print(f"  Textile form {i} - {form.data}")
             for i, form in enumerate(ProductTextileFormSet(request.POST, prefix="textile")):
                 print(f"Textile form {i} POST value:", form.data.get(f"textile-{i}-textile"))
             for key in request.POST:
@@ -48,27 +52,28 @@ def product_form(request):
                 product = product_form.save(commit=False)
                 product.save()
 
-                # Save accessories
                 accessory_formset.instance = product
                 accessory_formset.save()
 
-                # Group textile forms by textile field
-                grouped = defaultdict(list)
+                # ✅ Save textile forms individually, even if textile is reused
                 for form in textile_formset:
-                    textile = form.cleaned_data.get("textile")
-                    if textile:
-                        grouped[textile].append(form)
+                    for i, form in enumerate(textile_formset):
+                        print(f"Textile form {i} - cleaned_data: {form.cleaned_data}")
+                        if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
+                            instance = form.save(commit=False)
+                            instance.product = product
+                            instance.save()
 
-                for textile, forms in grouped.items():
-                    for form in forms:
-                        instance = form.save(commit=False)
-                        instance.product = product
-                        instance.textile = textile
-                        instance.save()
+                # ✅ Debug: Show all saved textile items
+                textiles = ProductTextile.objects.filter(product=product)
+                print(f"✅ Saved textile parts for product '{product.name}':")
+                for i, t in enumerate(textiles):
+                    print(f"  {i + 1}. {t.name} - {t.textile.name}, H: {t.height}, W: {t.width}, Qty: {t.quantity}")
 
-                # Calculate price
-                product.calculated_price = Decimal(compute_product_price(product))
-                product.retail_price = Decimal((product.calculated_price * Decimal('1.12')).quantize(Decimal('0.01')))
+                # ✅ Price calculation
+                calculated_price = compute_product_price(product)
+                product.calculated_price = calculated_price
+                product.retail_price = (calculated_price * Decimal("1.12")).quantize(Decimal("0.01"))
                 product.save()
 
                 return redirect("product-list")
