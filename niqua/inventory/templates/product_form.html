@@ -166,6 +166,25 @@ document.addEventListener("DOMContentLoaded", function () {
             
             dropdownBtn.textContent = label;
         }
+            // Debug: Print textile group values on form submit
+        document.querySelector("form").addEventListener("submit", () => {
+            console.log("🧾 DEBUG: Submitting form...");
+            const textileGroups = document.querySelectorAll(".textile-group");
+            textileGroups.forEach((group, index) => {
+                const textileInput = group.querySelector("input[name$='-textile']");
+                const name = group.querySelector("input[name$='-name']");
+                const height = group.querySelector("input[name$='-height']");
+                const width = group.querySelector("input[name$='-width']");
+                const quantity = group.querySelector("input[name$='-quantity']");
+                console.log(`📦 Textile ${index}:`);
+                console.log(`    ID: ${textileInput?.value}`);
+                console.log(`    Name: ${name?.value}`);
+                console.log(`    Height: ${height?.value}`);
+                console.log(`    Width: ${width?.value}`);
+                console.log(`    Quantity: ${quantity?.value}`);
+            });
+        });
+
     });
 
     // Add detail row inside textile group
@@ -177,10 +196,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const newRow = lastRow.cloneNode(true);
             newRow.querySelectorAll("input").forEach(input => input.value = "");
             details.appendChild(newRow);
-            const textileInput = newGroup.querySelector("input[name$='-textile']");
-                if (textileInput) {
-                    textileInput.value = "";
-                }
+            const textileInput = newGroup.querySelector("input[name$='-textile'], select[name$='-textile']");
+            if (textileInput) {
+                textileInput.name = `textile-${formCount}-textile`;
+                textileInput.id = `id_textile-${formCount}-textile`;
+                textileInput.value = "";
+            }
+
         }
     });
 
